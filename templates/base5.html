@@ -1,6 +1,7 @@
 {% extends "base3.html" %}
 
 {% block content %}
+    <h2>Размещение по каютам</h2>
     {% set a = "Каюта №" %}
     {% for i in distr %}
         <p>{{ i }} - {{ a }} {{ loop.index }} {% if loop.first %} - капитан корабля{% endif %}</p>
