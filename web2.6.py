@@ -7,7 +7,8 @@ distribution = ['Ридли Скотт', 'Энди Уир', 'Марк Уотни
 
 @app.route('/distribution')
 def distrib():
-    return render_template('base5.html', distr=distribution)
+    title = 'Колонизация Марса'
+    return render_template('base5.html', distr=distribution, title=title)
 
 
 if __name__ == "__main__":

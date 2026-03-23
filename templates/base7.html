@@ -1,0 +1,18 @@
+{% extends "base1.html" %}
+
+{% block content %}
+<h2>Оформление кают</h2>
+<table>
+    <tr>
+        <th>Цвет стен</th>
+        <th>Эмблема</th>
+    </tr>
+    <tr>
+        <td bgcolor="{% if age < 21 %}{% if x == 0 %}pink{% elif x == 1 %}cyan{% endif %}{% elif age >= 21 %}{% if x == 0 %}maroon{% elif x == 1 %}blue{% endif %}{% endif %}"
+            width="35%" height="75%"></td>
+        <td>
+            <img src="{{ url_for('static', filename=lin) }}" width="50%">
+        </td>
+    </tr>
+</table>
+{% endblock %}
