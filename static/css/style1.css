@@ -8,3 +8,7 @@ p {
 h2 {
     margin-left: 20%
 }
+.special::before {
+    content: url('/static/img/mars_photo.jpg');
+    margin-left: 10%
+}
