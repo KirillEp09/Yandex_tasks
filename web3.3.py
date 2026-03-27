@@ -1,6 +1,7 @@
 from flask import Flask
 from data import db_session
 from data.users import User
+from data.jobs import Jobs
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -23,7 +24,7 @@ def main():
     user1.position = "officer"
     user1.speciality = "civil engineer"
     user1.address = "module_1"
-    user1.email = "user1@mars.org"
+    user1.email = "user_first@mars.org"
     user2 = User()
     user2.surname = "Aldridge"
     user2.name = "Joseph"
@@ -31,7 +32,7 @@ def main():
     user2.position = "officer"
     user2.speciality = "surgeon"
     user2.address = "module_3"
-    user2.email = "user2@mars.org"
+    user2.email = "user_second@mars.org"
     user3 = User()
     user3.surname = "Adamson"
     user3.name = "Samuel"
@@ -39,11 +40,18 @@ def main():
     user3.position = "officer"
     user3.speciality = "physician"
     user3.address = "module_4"
-    user3.email = "user3@mars.org"
+    user3.email = "user_third@mars.org"
+    jobs = Jobs()
+    jobs.team_leader = 1
+    jobs.job = "deployment of residential modules 1 and 2"
+    jobs.work_size = 15
+    jobs.collaborators = "2,3"
+    jobs.is_finished = False
     db_sess.add(user)
     db_sess.add(user1)
     db_sess.add(user2)
     db_sess.add(user3)
+    db_sess.add(jobs)
     db_sess.commit()
     #app.run()
 
