@@ -1,11 +1,13 @@
 from flask import Flask, render_template, redirect
-from flask_login import LoginManager
+from flask_login import LoginManager, logout_user, login_required
 from data import db_session
 from data.users import User
+from data.jobs import Jobs
 from form.loginform import LoginForm
-from flask_login import login_user
+from flask_login import login_user, current_user
 from form.user import RegisterForm
-
+from info_in_base import clear_base, add_people, add_jobs
+from form.newjobsform import JobsForm
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -17,6 +19,16 @@ login_manager.init_app(app)
 def load_user(user_id):
     db_sess = db_session.create_session()
     return db_sess.get(User, user_id)
+
+
+@app.route("/")
+def index():
+    if current_user.is_authenticated:
+        db_sess = db_session.create_session()
+        jobs = db_sess.query(Jobs).all()
+    else:
+        jobs = []
+    return render_template('index.html', jobs=jobs)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -49,8 +61,12 @@ def reqister():
                                    message="Такой пользователь уже есть")
         user = User(
             name=form.name.data,
+            surname=form.surname.data,
             email=form.email.data,
-
+            age=form.age.data,
+            position=form.position.data,
+            speciality=form.speciality.data,
+            address=form.address.data,
         )
         user.set_password(form.password.data)
         db_sess.add(user)
@@ -59,6 +75,36 @@ def reqister():
     return render_template('register.html', title='Регистрация', form=form)
 
 
+@app.route('/register_job', methods=['GET', 'POST'])
+def reqister_job():
+    if current_user.is_authenticated:
+        form = JobsForm()
+        if form.validate_on_submit():
+            db_sess = db_session.create_session()
+            if db_sess.query(Jobs).filter(Jobs.job == form.job.data).first():
+                return render_template('add_jobs.html', form=form, message="Такая работа уже добавлена")
+            job = Jobs(
+                job=form.job.data,
+                team_leader=form.team_leader.data,
+                work_size=form.work_size.data,
+                collaborators=form.collaborators.data,
+                is_finished=form.is_finished.data,
+            )
+            db_sess.add(job)
+            db_sess.commit()
+            return redirect('/')
+        return render_template('add_jobs.html', form=form)
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect("/")
+
+
 if __name__ == "__main__":
     db_session.global_init("db/blogs.db")
     app.run(port=8080, host='127.0.0.1')
+    add_people()
+    add_jobs()
