@@ -23,13 +23,24 @@
             <tbody>
                 <tr>
                     <th class="table-info">{{ item.job }}</th>
-                    <th class="table-info">{{ item.user.name }}</th>
+                    <th class="table-info">{{ item.user.name }} {{ item.user.surname }}</th>
                     <th class="table-info">{{ item.work_size }}</th>
                     <th class="table-info">{{ item.collaborators }}</th>
                     <th class="table-danger">{{ item.is_finished }}</th>
                 </tr>
             </tbody>
         </table>
+        {% if current_user.is_authenticated and (current_user == item.creator.user or current_user.id == 1)  %}
+        <div>
+            <a href="/jobs/{{ item.id }}" class="btn btn-warning">
+                Изменить
+            </a>
+            <a href="/jobs_delete/{{ item.id }}" class="btn btn-danger">
+                Удалить
+            </a>
+        </div>
+        {% endif %}
+
     </div>
   <br>
 </div>
