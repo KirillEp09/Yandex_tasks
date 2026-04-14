@@ -7,7 +7,6 @@ from form.loginform import LoginForm
 from flask_login import login_user, current_user
 from form.user import RegisterForm
 from form.newjobsform import JobsForm
-from sqlalchemy.orm import joinedload
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
