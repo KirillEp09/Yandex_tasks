@@ -8,7 +8,18 @@ blueprint = flask.Blueprint(
     __name__,
     template_folder='templates'
 )
-
+# Получение всех работ
+@blueprint.route('/api/jobs')
+def get_news():
+    db_sess = db_session.create_session()
+    jobs = db_sess.query(Jobs).all()
+    return jsonify(
+        {
+            'jobs':
+                [item.to_dict(only=('job', 'id', 'user.name'))
+                 for item in jobs   ]
+        }
+    )
 
 # Получение одной работы
 @blueprint.route('/api/jobs/<int:id>', methods=['GET'])
@@ -18,7 +29,7 @@ def get_jobs(id):
     return jsonify(
         {
             'jobs': jobs.to_dict(only=(
-                'job', 'id', 'work_size'))
+                'job', 'id', 'user.name'))
         }
     )
 
@@ -29,7 +40,7 @@ def create_jobs():
     if not request.json:
         return make_response(jsonify({'error': 'Empty request'}), 400)
     elif not all(key in request.json for key in
-                 ['job', 'collaborators', 'id', 'is_finished']):
+                 ['job', 'team_leader', 'work_size', 'collaborators', 'id', 'is_finished']):
         return make_response(jsonify({'error': 'Bad request'}), 400)
     db_sess = db_session.create_session()
     job = Jobs(
