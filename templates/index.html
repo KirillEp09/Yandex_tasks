@@ -2,6 +2,16 @@
 
 {% block content %}
 {% if current_user.is_authenticated %}
+<div>
+    <a href="register_job" class="btn btn-secondary">
+        Добавить Работу
+    </a>
+    <a href="departament_main" class="btn btn-secondary">
+        Департаменты
+    </a>
+</div>
+{% endif %}
+{% if current_user.is_authenticated %}
     <h1 class="text-black text-center">Works log</h1>
 {% endif %}
 {% for item in jobs%}

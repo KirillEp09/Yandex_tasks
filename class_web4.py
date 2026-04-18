@@ -1,12 +1,14 @@
-from flask import Flask, render_template, redirect, abort, request
+from flask import Flask, render_template, redirect, abort, request, make_response, jsonify
 from flask_login import LoginManager, logout_user, login_required
-from data import db_session
+from data import db_session, jobs_api
 from data.users import User
 from data.jobs import Jobs
+from data.department import Department
 from form.loginform import LoginForm
 from flask_login import login_user, current_user
 from form.user import RegisterForm
 from form.newjobsform import JobsForm
+from form.departamentform import DepartamentForm
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -28,6 +30,16 @@ def index():
     else:
         jobs = []
     return render_template('index.html', jobs=jobs)
+
+
+@app.route("/departament_main")
+def departament_main():
+    if current_user.is_authenticated:
+        db_sess = db_session.create_session()
+        departaments = db_sess.query(Department).all()
+    else:
+        departaments = []
+    return render_template('index2.html', departaments = departaments)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -97,6 +109,29 @@ def reqister_job():
         return render_template('add_jobs.html', form=form, title="Добавление работы")
 
 
+@app.route('/register_departament', methods=['GET', 'POST'])
+def register_departament():
+    if current_user.is_authenticated:
+        form = DepartamentForm()
+        if form.validate_on_submit():
+            db_sess = db_session.create_session()
+            if db_sess.query(Department).filter(Department.title == form.title.data).first():
+                return render_template('add_departament.html', form=form, message="Такой департамент уже есть",
+                                       title="Добавление Департамента")
+            department = Department(
+                id=form.id.data,
+                title=form.title.data,
+                creator=current_user.id,
+                chief=form.chief.data,
+                members=form.members.data,
+                email=form.email.data,
+            )
+            db_sess.add(department)
+            db_sess.commit()
+            return redirect('/departament_main')
+        return render_template('add_departament.html', form=form, title="Добавление Департамента")
+
+
 @app.route('/jobs/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_jobs(id):
@@ -130,6 +165,39 @@ def edit_jobs(id):
                            form=form
                            )
 
+@app.route('/departament/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_departament(id):
+    form = DepartamentForm()
+    if request.method == "GET":
+        db_sess = db_session.create_session()
+        dep = db_sess.query(Department).filter(Department.id == id, Department.creator == current_user.id).first()
+        if dep:
+            form.id.data = dep.id
+            form.title.data = dep.title
+            form.chief.data = dep.chief
+            form.members.data = dep.members
+            form.email.data = dep.email
+        else:
+            abort(404)
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        dep = db_sess.query(Department).filter(Department.id == id, Department.creator == current_user.id).first()
+        if dep:
+            dep.id = form.id.data
+            dep.title = form.title.data
+            dep.chief = form.chief.data
+            dep.members = form.members.data
+            dep.email = form.email.data
+            db_sess.commit()
+            return redirect('/departament_main')
+        else:
+            abort(404)
+    return render_template('add_departament.html',
+                           title='Редактирование Департамента',
+                           form=form
+                           )
+
 
 @app.route('/jobs_delete/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -143,6 +211,18 @@ def jobs_delete(id):
         abort(404)
     return redirect("/")
 
+@app.route('/departament_delete/<int:id>', methods=['GET', 'POST'])
+@login_required
+def departament_delete(id):
+    db_sess = db_session.create_session()
+    dep = db_sess.query(Department).filter(Department.id == id, Department.creator == current_user.id).first()
+    if dep:
+        db_sess.delete(dep)
+        db_sess.commit()
+    else:
+        abort(404)
+    return redirect("/departament_main")
+
 
 @app.route('/logout')
 @login_required
@@ -151,6 +231,22 @@ def logout():
     return redirect("/")
 
 
+@app.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({'error': 'Not found'}), 404)
+
+
+@app.errorhandler(400)
+def bad_request(_):
+    return make_response(jsonify({'error': 'Bad Request'}), 400)
+
+
+@app.errorhandler(500)
+def bad_request(_):
+    return make_response(jsonify({'error': ':('}), 500)
+
+
 if __name__ == "__main__":
     db_session.global_init("db/blogs.db")
+    app.register_blueprint(jobs_api.blueprint)
     app.run(port=8080, host='127.0.0.1')
