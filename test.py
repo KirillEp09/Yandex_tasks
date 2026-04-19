@@ -1,4 +1,4 @@
-from requests import get, post, delete
+from requests import get, post, delete, put
 
 print(get('http://localhost:8080/api/jobs').json())  # Все работы
 print(get('http://localhost:8080/api/jobs/1').json())  # 1 работа
@@ -22,5 +22,8 @@ print(post('http://localhost:8080/api/jobs',  # Не тот тип данных 
            json={'job': 'Работа 2',
                  'team_leader': '1',
                  'work_size': '12',
-                 'collaborators': '6, 8',
+                 'collaborators': '6, 8', 
                  'is_finished': 2}).json())
+print(delete('http://localhost:8080/api/jobs/1'))  # Корректное удаление
+print(delete('http://localhost:8080/api/jobs/91239'))  # Несуществующее id
+print(delete('http://localhost:8080/api/jobs/91239')) # Неверное удаление - строка
