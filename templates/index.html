@@ -27,6 +27,7 @@
                     <th>Team leader</th>
                     <th>Duration</th>
                     <th>List of collaborations</th>
+                    <th>Category</th>
                     <th>Is finished</th>
                 </tr>
             </thead>
@@ -36,6 +37,11 @@
                     <th class="table-info">{{ item.user.name }} {{ item.user.surname }}</th>
                     <th class="table-info">{{ item.work_size }}</th>
                     <th class="table-info">{{ item.collaborators }}</th>
+                    <th class="table-info">
+                        {% for i in item.categories %}
+                            {{ i.name }}{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    </th>
                     <th class="table-danger">{{ item.is_finished }}</th>
                 </tr>
             </tbody>

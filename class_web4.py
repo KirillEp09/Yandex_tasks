@@ -3,6 +3,7 @@ from flask_login import LoginManager, logout_user, login_required
 from data import db_session, jobs_api
 from data.users import User
 from data.jobs import Jobs
+from data.category import Category
 from data.department import Department
 from form.loginform import LoginForm
 from flask_login import login_user, current_user
@@ -39,7 +40,7 @@ def departament_main():
         departaments = db_sess.query(Department).all()
     else:
         departaments = []
-    return render_template('index2.html', departaments = departaments)
+    return render_template('index2.html', departaments=departaments)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -103,6 +104,10 @@ def reqister_job():
                 collaborators=form.collaborators.data,
                 is_finished=form.is_finished.data,
             )
+            for j in form.category.data.split():
+                category = db_sess.query(Category).filter(
+                    Category.name == j).first()  # Я добавил три различных категории при первом создании бд
+                job.categories.append(category)
             db_sess.add(job)
             db_sess.commit()
             return redirect('/')
@@ -165,6 +170,7 @@ def edit_jobs(id):
                            form=form
                            )
 
+
 @app.route('/departament/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_departament(id):
@@ -210,6 +216,7 @@ def jobs_delete(id):
     else:
         abort(404)
     return redirect("/")
+
 
 @app.route('/departament_delete/<int:id>', methods=['GET', 'POST'])
 @login_required
