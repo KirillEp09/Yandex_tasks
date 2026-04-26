@@ -8,6 +8,8 @@ blueprint = flask.Blueprint(
     __name__,
     template_folder='templates'
 )
+
+
 # Получение всех работ
 @blueprint.route('/api/jobs')
 def get_news():
@@ -17,13 +19,14 @@ def get_news():
         {
             'jobs':
                 [item.to_dict(only=('job', 'id', 'user.name'))
-                 for item in jobs   ]
+                 for item in jobs]
         }
     )
 
+
 # Получение одной работы
 @blueprint.route('/api/jobs/<int:id>', methods=['GET'])
-def get_jobs(id):
+def get_job(id):
     db_sess = db_session.create_session()
     jobs = db_sess.get(Jobs, id)
     return jsonify(
@@ -36,7 +39,7 @@ def get_jobs(id):
 
 # Добавление работы
 @blueprint.route('/api/jobs', methods=['POST'])
-def create_jobs():
+def create_job():
     if not request.json:
         return make_response(jsonify({'error': 'Empty request'}), 400)
     elif not all(key in request.json for key in
@@ -67,3 +70,8 @@ def delete_news(id):
     db_sess.delete(jobs)
     db_sess.commit()
     return jsonify({'success': 'OK'})
+
+
+@blueprint.route('/api/jobs/<int:id>', methods=['GET', 'POST'])
+def change_job(id):
+    pass

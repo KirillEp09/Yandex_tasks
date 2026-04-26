@@ -1,6 +1,6 @@
-from requests import get, post, delete, put
+from requests import get, post, delete
 
-print(get('http://localhost:8080/api/jobs').json())  # Все работы
+print(get('http://localhost:5000/api/jobs').json())  # Все работы
 print(get('http://localhost:8080/api/jobs/1').json())  # 1 работа
 print(get('http://localhost:8080/api/jobs/999').json())  # Неверное получение работы
 print(get('http://localhost:8080/api/jobs/q').json())  # Неверное получение - строка

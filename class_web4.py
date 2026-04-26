@@ -1,9 +1,9 @@
 from flask import Flask, render_template, redirect, abort, request, make_response, jsonify
 from flask_login import LoginManager, logout_user, login_required
-from data import db_session, jobs_api
+from data import db_session
 from data.users import User
 from data.jobs import Jobs
-from data.category import Category
+from data.category import Category, jobs_to_category_table
 from data.department import Department
 from form.loginform import LoginForm
 from flask_login import login_user, current_user
@@ -149,6 +149,14 @@ def edit_jobs(id):
             form.team_leader.data = jobs.team_leader
             form.work_size.data = jobs.work_size
             form.collaborators.data = jobs.collaborators
+            k = ""
+            for j in jobs.categories:
+                if k != "":
+                    k += f" {j.name}"
+                else:
+                    k += f"{j.name}"
+                jobs.categories.remove(j)
+            form.category.data = k
             form.is_finished.data = jobs.is_finished
         else:
             abort(404)
@@ -160,6 +168,8 @@ def edit_jobs(id):
             jobs.team_leader = form.team_leader.data
             jobs.work_size = form.work_size.data
             jobs.collaborators = form.collaborators.data
+            for c in form.category.data.split():
+                jobs.categories.append(db_sess.query(Category).filter(Category.name == c).first())
             jobs.is_finished = form.is_finished.data
             db_sess.commit()
             return redirect('/')
@@ -238,22 +248,6 @@ def logout():
     return redirect("/")
 
 
-@app.errorhandler(404)
-def not_found(error):
-    return make_response(jsonify({'error': 'Not found'}), 404)
-
-
-@app.errorhandler(400)
-def bad_request(_):
-    return make_response(jsonify({'error': 'Bad Request'}), 400)
-
-
-@app.errorhandler(500)
-def bad_request(_):
-    return make_response(jsonify({'error': ':('}), 500)
-
-
 if __name__ == "__main__":
     db_session.global_init("db/blogs.db")
-    app.register_blueprint(jobs_api.blueprint)
     app.run(port=8080, host='127.0.0.1')
