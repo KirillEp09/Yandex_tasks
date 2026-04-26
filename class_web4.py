@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, abort, request, make_response, jsonify
+from flask import Flask, render_template, redirect, abort, request
 from flask_login import LoginManager, logout_user, login_required
 from data import db_session
 from data.users import User
@@ -88,11 +88,12 @@ def reqister():
 
 
 @app.route('/register_job', methods=['GET', 'POST'])
-def reqister_job():
+def register_job():
     if current_user.is_authenticated:
         form = JobsForm()
+        db_sess = db_session.create_session()
+        form.category.choices = [(c.id, c.name) for c in db_sess.query(Category).all()]
         if form.validate_on_submit():
-            db_sess = db_session.create_session()
             if db_sess.query(Jobs).filter(Jobs.job == form.job.data).first():
                 return render_template('add_jobs.html', form=form, message="Такая работа уже добавлена",
                                        title="Добавление работы")
@@ -104,10 +105,8 @@ def reqister_job():
                 collaborators=form.collaborators.data,
                 is_finished=form.is_finished.data,
             )
-            for j in form.category.data.split():
-                category = db_sess.query(Category).filter(
-                    Category.name == j).first()  # Я добавил три различных категории при первом создании бд
-                job.categories.append(category)
+            if form.category.data:
+                job.categories = db_sess.query(Category).filter(Category.id.in_(form.category.data)).all()
             db_sess.add(job)
             db_sess.commit()
             return redirect('/')
@@ -141,22 +140,17 @@ def register_departament():
 @login_required
 def edit_jobs(id):
     form = JobsForm()
+    db_sess = db_session.create_session()
+    all_category = db_sess.query(Category).all()
+    form.category.choices = [(c.id, c.name) for c in all_category]
     if request.method == "GET":
-        db_sess = db_session.create_session()
         jobs = db_sess.query(Jobs).filter(Jobs.id == id, Jobs.creator == current_user.id).first()
         if jobs:
             form.job.data = jobs.job
             form.team_leader.data = jobs.team_leader
             form.work_size.data = jobs.work_size
             form.collaborators.data = jobs.collaborators
-            k = ""
-            for j in jobs.categories:
-                if k != "":
-                    k += f" {j.name}"
-                else:
-                    k += f"{j.name}"
-                jobs.categories.remove(j)
-            form.category.data = k
+            form.category.data = [c.id for c in jobs.categories]
             form.is_finished.data = jobs.is_finished
         else:
             abort(404)
@@ -168,8 +162,7 @@ def edit_jobs(id):
             jobs.team_leader = form.team_leader.data
             jobs.work_size = form.work_size.data
             jobs.collaborators = form.collaborators.data
-            for c in form.category.data.split():
-                jobs.categories.append(db_sess.query(Category).filter(Category.name == c).first())
+            jobs.categories = db_sess.query(Category).filter(Category.id.in_(form.category.data)).all()
             jobs.is_finished = form.is_finished.data
             db_sess.commit()
             return redirect('/')
