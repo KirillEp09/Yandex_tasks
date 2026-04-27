@@ -70,7 +70,7 @@ def delete_job(id):
     db_sess.commit()
     return jsonify({'success': 'OK'})
 
-
+# Изменение работ
 @blueprint.route('/api/jobs/<int:id>', methods=['PUT'])
 def change_job(id):
     if not request.json:
