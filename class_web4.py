@@ -3,7 +3,7 @@ from flask_login import LoginManager, logout_user, login_required
 from data import db_session
 from data.users import User
 from data.jobs import Jobs
-from data.category import Category, jobs_to_category_table
+from data.category import Category
 from data.department import Department
 from form.loginform import LoginForm
 from flask_login import login_user, current_user
